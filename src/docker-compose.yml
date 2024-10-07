@@ -1,0 +1,53 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  producer:
+    build: ./services/producer
+    volumes:
+      - "./meta/avro_schemas/:/app/src/avro_schemas/"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_USER_TOPIC: user_topic
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_AVRO_SCHEMA_PATH: /app/src/avro_schemas/user.avsc
+
+  consumer:
+    build: ./services/consumer
+    volumes:
+      - "./meta/avro_schemas/:/app/src/avro_schemas/"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_USER_TOPIC: user_topic
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_AVRO_SCHEMA_PATH: /app/src/avro_schemas/user.avsc
