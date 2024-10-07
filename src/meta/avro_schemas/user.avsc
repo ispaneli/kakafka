@@ -1,0 +1,57 @@
+{
+  "type": "record",
+  "name": "User",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+
+    {
+      "name": "date_of_birth",
+      "type": "int",
+      "logicalType": "date"
+    },
+    {
+      "name": "address",
+      "type": "string"
+    },
+    {
+      "name": "favorite_color",
+      "type": "string"
+    },
+    {
+      "name": "phone_number",
+      "type": "string"
+    },
+    {
+      "name": "email",
+      "type": "string"
+    },
+    {
+      "name": "credit_card",
+      "type": {
+        "type": "record",
+        "name": "CreditCard",
+        "fields": [
+          {
+            "name": "provider",
+            "type": "string"
+          },
+          {
+            "name": "number",
+            "type": "long"
+          },
+          {
+            "name": "expire",
+            "type": "string"
+          },
+          {
+            "name": "security_code",
+            "type": "int"
+          }
+        ]
+      }
+    }
+  ]
+}
